@@ -3,6 +3,8 @@ package com.immich.autodownloader.sync
 import android.content.Context
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
+import androidx.work.ExistingWorkPolicy.APPEND_OR_REPLACE
+import androidx.work.ExistingWorkPolicy.KEEP
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
@@ -25,7 +27,7 @@ class ImmichSyncWorker(
 
         return try {
             app.container.repository.runSync(trigger = "background")
-            schedule(
+            queueNextRun(
                 context = applicationContext,
                 wifiOnly = settings.wifiOnly,
                 chargeOnly = settings.chargeOnly,
@@ -40,7 +42,30 @@ class ImmichSyncWorker(
         const val UNIQUE_WORK_NAME = "immich-periodic-sync"
         const val FIXED_INTERVAL_MINUTES = 1L
 
-        fun schedule(context: Context, wifiOnly: Boolean, chargeOnly: Boolean) {
+        fun ensureScheduled(context: Context, wifiOnly: Boolean, chargeOnly: Boolean) {
+            enqueue(
+                context = context,
+                wifiOnly = wifiOnly,
+                chargeOnly = chargeOnly,
+                policy = KEEP,
+            )
+        }
+
+        fun queueNextRun(context: Context, wifiOnly: Boolean, chargeOnly: Boolean) {
+            enqueue(
+                context = context,
+                wifiOnly = wifiOnly,
+                chargeOnly = chargeOnly,
+                policy = APPEND_OR_REPLACE,
+            )
+        }
+
+        private fun enqueue(
+            context: Context,
+            wifiOnly: Boolean,
+            chargeOnly: Boolean,
+            policy: ExistingWorkPolicy,
+        ) {
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(if (wifiOnly) NetworkType.UNMETERED else NetworkType.CONNECTED)
                 .setRequiresBatteryNotLow(true)
@@ -54,7 +79,7 @@ class ImmichSyncWorker(
 
             WorkManager.getInstance(context).enqueueUniqueWork(
                 UNIQUE_WORK_NAME,
-                ExistingWorkPolicy.REPLACE,
+                policy,
                 request,
             )
         }

@@ -79,7 +79,7 @@ fun ImmichSyncRoot(container: AppContainer) {
 
     LaunchedEffect(settings.autoSync, settings.intervalMinutes, settings.wifiOnly, settings.chargeOnly) {
         if (settings.autoSync) {
-            ImmichSyncWorker.schedule(
+            ImmichSyncWorker.ensureScheduled(
                 context = context,
                 wifiOnly = settings.wifiOnly,
                 chargeOnly = settings.chargeOnly,
