@@ -1,0 +1,30 @@
+# Gradle
+.gradle/
+build/
+*/build/
+
+# Local Android SDK / IDE config
+local.properties
+.idea/
+*.iml
+
+# Android Studio captures and navigation
+.navigation/
+captures/
+
+# Kotlin / Java
+*.class
+out/
+
+# APK / AAB outputs
+*.apk
+*.aab
+*.ap_
+output-metadata.json
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
